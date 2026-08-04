@@ -11,6 +11,8 @@
         "percentage": 90
       }
     ],
-    "_source_file": "text_extraction.png"
+    "_source_file": "text_extraction.png",
+    "_model_used": "Qwen/Qwen3-VL-8B-Instruct",
+    "_provider_used": "featherless-ai"
   }
 ]
