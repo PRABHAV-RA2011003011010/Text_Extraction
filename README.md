@@ -1,0 +1,1 @@
+conda activate text_extraction

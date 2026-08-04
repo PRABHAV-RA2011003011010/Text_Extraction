@@ -1,0 +1,16 @@
+[
+  {
+    "name": "PRABHAV",
+    "roll_no": 25,
+    "address": "New York , US",
+    "backlogs": 0,
+    "academic_record": [
+      {
+        "year": 1,
+        "cgpa": 9.5,
+        "percentage": 90
+      }
+    ],
+    "_source_file": "text_extraction.png"
+  }
+]
