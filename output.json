@@ -1,18 +1,36 @@
 [
   {
-    "name": "PRABHAV",
-    "roll_no": 25,
-    "address": "New York , US",
-    "backlogs": 0,
-    "academic_record": [
+    "revision_table": [
       {
-        "year": 1,
-        "cgpa": 9.5,
-        "percentage": 90
+        "rev": "A",
+        "cr": "TK",
+        "description": "INITIAL RELEASE",
+        "drn": "SX",
+        "chk": "DD-MM-YY",
+        "date": "04-09-25"
       }
     ],
-    "_source_file": "text_extraction.png",
-    "_model_used": "Qwen/Qwen3-VL-8B-Instruct",
+    "reference_box": {
+      "note": "NOTE UTIL 6.10",
+      "items": [
+        "CATIA V5",
+        "SGM557E"
+      ]
+    },
+    "confidential_info": "This Drawing and all of the information contained Is OWNED by me.",
+    "part_name": "656 AC89 BORCH GRT EXTRUSION",
+    "metric_note": "DIMENSIONS SHOWN IN MILLIMETERS",
+    "scale_note": "VIEWS ARE 2:1 UNLESS OTHERWISE SPECIFIED",
+    "part_no": "XXXXXXXX",
+    "customer_part_names": [
+      "XXX",
+      "XXX"
+    ],
+    "dwg_size": "A1",
+    "sheet": "1",
+    "off": "1",
+    "_source_file": "FINAL_TEST.png",
+    "_model_used": "Qwen/Qwen3-VL-4B-Instruct",
     "_provider_used": "featherless-ai"
   }
 ]

@@ -1,9 +1,9 @@
 """
 extract_card.py
 
-Extracts structured text + table data from student record card images
-using Qwen3-VL-30B-A3B-Instruct via the HuggingFace Inference API
-(no local model download required).
+Extracts structured text + table data from engineering drawing title
+block images using Qwen3-VL-4B-Instruct via the HuggingFace Inference
+API (no local model download required).
 
 Usage:
     # Put HF_TOKEN=hf_xxxxxxxxxxxxxxxxxxxxx in a .env file in this directory
@@ -33,34 +33,60 @@ MAX_DIMENSION = 1024  # resize images before sending -- smaller payloads
                        # process faster and time out less often
 
 # ---- Schema-driven prompt -------------------------------------------------
-EXTRACTION_PROMPT = """You are an information extraction engine. Look at this image of a student record card.
+EXTRACTION_PROMPT = """You are an information extraction engine. Look at this image of an engineering drawing title block.
 
 Extract the data into ONLY valid JSON (no markdown fences, no explanation, no preamble) matching exactly this schema:
 
 {
-  "name": "string",
-  "roll_no": "number or null",
-  "address": "string or null",
-  "backlogs": "number or null",
-  "academic_record": [
-    {"year": "number", "cgpa": "number or null", "percentage": "number or null"}
-  ]
+  "revision_table": [
+    {
+      "rev": "string",
+      "cr": "string or null",
+      "description": "string",
+      "drn": "string or null",
+      "chk": "string or null",
+      "date": "string or null"
+    }
+  ],
+  "reference_box": {
+    "note": "string or null",
+    "items": ["string"]
+  },
+  "confidential_info": "string or null",
+  "part_name": "string or null",
+  "metric_note": "string or null",
+  "scale_note": "string or null",
+  "part_no": "string or null",
+  "customer_part_names": ["string"],
+  "dwg_size": "string or null",
+  "sheet": "string or null",
+  "off": "string or null"
 }
 
 Rules:
-- The top of the card has a bordered TABLE with columns like Year / CGPA / Percentage. Each row of that table is ONE object in the "academic_record" array. If there is only one row, the array still has exactly one object.
-- Percentage should be a plain number (e.g. 90 for "90%"), not a string with a % sign.
-- The rest of the card has label:value pairs (Name, Roll No, Address, Backlogs) — map these directly to the matching schema fields.
-- If a field is missing or unreadable, use null. Do not guess.
+- The top has a bordered TABLE with columns REV / CR / Revision Description / DRN / CHK / Date. Each row is ONE object in "revision_table". If there is only one row, the array still has exactly one object.
+- "reference_box" corresponds to the box labeled "REFERENCE BOX" — capture its header note text in "note" and each bulleted/listed line as a separate string in "items".
+- "confidential_info" is the free text under the "CONFIDENTIAL AND OTHER INFORMATION" heading — capture it as a single string, preserving the meaning even if the box shows underlined or unusual text.
+- "part_name" is the text under "PART NAME".
+- "metric_note" is the text under "METRIC" (e.g. dimensions units note).
+- "scale_note" is the text under "DO NOT SCALE DRAWING" (e.g. views/scale instructions).
+- "part_no" is the value under "PART No.".
+- "customer_part_names" is a list — capture each "CUSTOMER PART NAME" value as a separate string in order (there may be more than one row).
+- "dwg_size", "sheet", "off" come from the bottom-right block (DWG SIZE, SHT, OFF).
+- If a field is missing, empty, unreadable, or shows placeholder text like "XXX"/"XXXXXXX", capture it exactly as shown (do not interpret placeholders as null unless the field is truly blank).
 - Output ONLY the JSON object, nothing else.
 """
 
 
-def image_to_data_url(image_path: Path) -> str:
-    ext = image_path.suffix.lower().lstrip(".")
-    mime = "jpeg" if ext in ("jpg", "jpeg") else ext
-    b64 = base64.b64encode(image_path.read_bytes()).decode("utf-8")
-    return f"data:image/{mime};base64,{b64}"
+def image_to_data_url(image_path: Path, max_dimension: int = MAX_DIMENSION) -> str:
+    """Resize (if needed) and base64-encode an image as a data URL."""
+    img = Image.open(image_path).convert("RGB")
+    if max(img.size) > max_dimension:
+        img.thumbnail((max_dimension, max_dimension), Image.LANCZOS)
+    buf = io.BytesIO()
+    img.save(buf, format="JPEG", quality=85)
+    b64 = base64.b64encode(buf.getvalue()).decode("utf-8")
+    return f"data:image/jpeg;base64,{b64}"
 
 
 def extract_json_from_text(text: str) -> dict:
@@ -94,7 +120,7 @@ def run_extraction(client: InferenceClient, image_path: Path) -> dict:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Extract structured data from student card images via HF Inference API.")
+    parser = argparse.ArgumentParser(description="Extract structured data from drawing title block images via HF Inference API.")
     parser.add_argument("--input_dir", default="input", help="Folder containing card images")
     parser.add_argument("--output_file", default="output.json", help="Where to write extracted JSON array")
     parser.add_argument("--hf_token", default=None, help="HF access token (or set HF_TOKEN env var)")
@@ -128,7 +154,7 @@ def main():
             data["_model_used"] = MODEL_ID
             data["_provider_used"] = PROVIDER
             results.append(data)
-            print(f"  ok: {data.get('name')} (roll_no={data.get('roll_no')})")
+            print(f"  ok: {data.get('part_name')} (part_no={data.get('part_no')})")
         except Exception as e:
             print(f"  FAILED on {img_path.name}: {e}")
             results.append({"_source_file": img_path.name, "_error": str(e)})
