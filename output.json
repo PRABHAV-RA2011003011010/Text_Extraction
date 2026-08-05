@@ -3,10 +3,10 @@
     "revision_table": [
       {
         "rev": "A",
-        "cr": "TK",
+        "cr": "56789",
         "description": "INITIAL RELEASE",
-        "drn": "SX",
-        "chk": "DD-MM-YY",
+        "drn": "TK",
+        "chk": "SX",
         "date": "04-09-25"
       }
     ],
@@ -21,7 +21,7 @@
     "part_name": "656 AC89 BORCH GRT EXTRUSION",
     "metric_note": "DIMENSIONS SHOWN IN MILLIMETERS",
     "scale_note": "VIEWS ARE 2:1 UNLESS OTHERWISE SPECIFIED",
-    "part_no": "XXXXXXXX",
+    "part_no": "XXXXXXX",
     "customer_part_names": [
       "XXX",
       "XXX"
